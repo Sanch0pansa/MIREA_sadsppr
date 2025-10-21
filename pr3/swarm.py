@@ -29,10 +29,10 @@ class Particle:
     
     def move(self) -> None:
         self.__coords += self.__velocity
+
         if self.value < self.best_value:
             self.__best_solution_coords = self.__coords.copy()
             if self.value < self.global_best_value:
-                print("Перезаписываем глобальный минимум", self.value, self.global_best_value)
                 self.__global_best_solution_coords = self.__coords.copy()
 
     def accelerate(
@@ -78,7 +78,10 @@ class Particle:
         # print(f"Координаты: {self.__coords}")
         # print(f"Собственное лучшее решение: {self.__best_solution_coords}; {self.__function(self.__best_solution_coords)}")
         # print(f"Глобальное лучшее решение: {self.__global_best_solution_coords}; {self.__function(self.__global_best_solution_coords)}")
-        print(f"Координаты: ({self.__coords[0]}, {self.__coords[1]}); Скорость: ({self.__velocity[0]}, {self.__velocity[1]}); Лучшее значение функции: {self.best_value}.")
+        print(
+            f"Координаты: ({np.round(self.__coords[0], 3)}, {np.round(self.__coords[1], 3)}); "
+            f"Скорость: ({np.round(self.__velocity[0], 3)}, {np.round(self.__velocity[1], 3)}); "
+            f"Лучшее значение функции: {np.round(self.best_value, 3)}.")
 
 
 def build_particle(
@@ -128,8 +131,8 @@ class Swarm(ABC):
     
     def step(self):
         for i, particle in enumerate(self._particles):
-            print(f"{i} частица. ", end="")
-            particle.print_state()
+            # print(f"{i} частица. ", end="")
+            # particle.print_state()
             particle.accelerate(
                 cognitive_coefficient=self._cognitive_coefficient,
                 social_coefficient=self._social_coefficient,
@@ -144,7 +147,6 @@ class Swarm(ABC):
         best_solution_coords = None
         for particle in self._particles:
             if particle.global_best_value < best_value:
-                print("Нашли новое наименьшее решение:", particle.global_best_value)
                 best_value = particle.global_best_value
                 best_solution_coords = particle.global_best_solution_coords
         
@@ -156,7 +158,7 @@ class Swarm(ABC):
             coords = self.find_global_best_solution_coords()
             value = self._function(coords)
 
-            print(f"[{step + 1}/{n_steps}] Coords: {coords}; value={value}")
+            print(f"[{step + 1}/{n_steps}] Координаты лучшего решения: {coords}; Значение: {value}")
         
         return self.find_global_best_solution_coords()
     

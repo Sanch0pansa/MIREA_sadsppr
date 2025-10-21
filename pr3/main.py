@@ -22,22 +22,22 @@ gswarm = GlobalSwarm(
     function=drop_wave_function,
     fields_from=np.array([-5.12, -5.12]),
     fields_to=np.array([5.12, 5.12]),
-    n_particles=3,
+    n_particles=300,
     cognitive_coefficient=2,
     social_coefficient=2,
     inertia=0.7,
 )
 
-gswarm.optimize(10)
+gswarm.optimize(100)
 
 # gswarm = LocalSwarm(
 #     function=drop_wave_function,
 #     fields_from=np.array([-5.12, -5.12]),
 #     fields_to=np.array([5.12, 5.12]),
-#     n_particles=100,
+#     n_particles=300,
 #     cognitive_coefficient=2,
 #     social_coefficient=2,
-#     inertia=0.6,
+#     inertia=0.7,
 #     neighbors=1,
 # )
 
