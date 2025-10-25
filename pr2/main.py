@@ -239,4 +239,5 @@ def function_optimization():
     tr.print_best_solution()
     plt.show()
 
-function_optimization()
+# function_optimization()
+traveling()
