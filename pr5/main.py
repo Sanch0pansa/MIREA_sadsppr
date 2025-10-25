@@ -110,16 +110,26 @@ class BeeColony:
 
         return new_region_centers
 
-    def optimize(self, n_iterations: int) -> None:
+    def optimize(self, n_iterations: int, stop_after_n_stable_iterations: int) -> None:
         regions = self.generate_scouts_regions_centers()
         last_regions = regions
+        stable_iterations = 0
         for i in range(n_iterations):
             print(f"\n\n====== Шаг {i} ======")
             regions = self.step(regions)
-            for region in regions:
-                
+            for i, (region, last_region) in enumerate(zip(regions, last_regions)):
+                if (region - last_region > 0.005).any():
+                    stable_iterations = 0
+                    print("Не совпал регион", i)
+                    break
+            else:
+                stable_iterations += 1
+                print("Итерация стабильна")
+            if stable_iterations > stop_after_n_stable_iterations:
+                break
+            last_regions = regions
 
-         self.get_unique_regions_centers(regions)[0]
+        return self.get_unique_regions_centers(regions)[0]
 
 
 def drop_wave_function(coords):
@@ -147,7 +157,7 @@ colony = BeeColony(
     n_scouts=5,
     n_bees_to_region=5,
 )
-res = colony.optimize(200)
+res = colony.optimize(20000, 25)
 print("\n\n")
 print("Результат:", res)
 print("Функция: ", drop_wave_function(res))
