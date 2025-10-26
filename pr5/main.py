@@ -66,7 +66,7 @@ class BeeColony:
                 if distance(best_region, region) < self._area_intersection_distance:
                     real_region = region
             unique_sorted_regions_centers.append(real_region)
-        
+
         return unique_sorted_regions_centers
 
     def get_scouts_regions_centers(self) -> list[np.ndarray]:
@@ -90,8 +90,9 @@ class BeeColony:
 
     def step(self, regions_centers: list[np.ndarray]) -> list[np.ndarray]:
         regions_centers = self.get_unique_regions_centers(regions_centers)
-        print("Скауты:")
-        print(*regions_centers, sep="\n")
+        # print("Координаты окрестностей:")
+        # for scout in regions_centers:
+        #     print(scout.round(4), self._function(scout).round(4))
 
         new_region_centers = []
         for i, region_center in enumerate(regions_centers):
@@ -99,13 +100,14 @@ class BeeColony:
                 region_center=region_center,
                 n_bees=self._n_bees_to_region,
             )
-            print(f"\n- Пчелы в области {i} ({region_center}):")
-            for bee in bees:
-                print(bee, "функция:", self._function(bee))
+
+            # print(f"\n- Пчелы в области {i} ({region_center}):")
+            # for bee in bees:
+            #     print(bee.round(4), "функция:", self._function(bee).round(4))
             bees.append(region_center)
             bees.sort(key=self._function)
-            if (np.abs(bees[0] - region_center) > 0.0001).all():
-                print(f"Обновление области {i}: {bees[0]} ({self._function(bees[0])})")
+            # if (np.abs(bees[0] - region_center) > 0.0001).all():
+            #     print(f"Обновление области {i}: {bees[0]} ({self._function(bees[0])})")
             new_region_centers.append(bees[0])
 
         return new_region_centers
@@ -117,10 +119,14 @@ class BeeColony:
         for i in range(n_iterations):
             print(f"\n\n====== Шаг {i} ======")
             regions = self.step(regions)
+            best_solution = self.get_unique_regions_centers(regions)[0]
+            best_value = self._function(best_solution)
+            print("Лучшее решение:", best_solution)
+            print("Лучшее значение функции:", best_value)
             for i, (region, last_region) in enumerate(zip(regions, last_regions)):
                 if (region - last_region > 0.005).any():
                     stable_iterations = 0
-                    print("Не совпал регион", i)
+                    # print("Не совпал регион", i)
                     break
             else:
                 stable_iterations += 1
@@ -154,10 +160,10 @@ colony = BeeColony(
     field_to=np.array([5.12, 5.12]),
     area_size=0.5,
     area_intersection_distance=0.5,
-    n_scouts=5,
-    n_bees_to_region=5,
+    n_scouts=25,
+    n_bees_to_region=25,
 )
-res = colony.optimize(20000, 25)
+res = colony.optimize(1_000_000_000, 25)
 print("\n\n")
 print("Результат:", res)
 print("Функция: ", drop_wave_function(res))

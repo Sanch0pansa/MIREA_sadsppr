@@ -1,11 +1,6 @@
-from typing import TypeVar, Generic, TypeAlias
-from abc import ABC, abstractmethod
-from random import choices
-from collections.abc import Callable
-import math
-import numpy as np
+from typing import TypeAlias
+import random
 import json
-from matplotlib import pyplot as plt
 
 GraphType: TypeAlias = dict[str, dict[str, float]]
 
@@ -33,6 +28,17 @@ class Ant:
                 (1 / distances[self._current_vertex][vertex]) ** beta
             ) for vertex in possible_vertices
         )
+        if print_state:
+            print(f"Вероятности ({len(self._visited_vertices)}):")
+            for vertex in possible_vertices:
+                value = (
+                    pheromones[self._current_vertex][vertex] ** alpha
+                    *
+                    (1 / distances[self._current_vertex][vertex]) ** beta
+                )
+                v1 = round(pheromones[self._current_vertex][vertex], 4)
+                v2 = round((1 / distances[self._current_vertex][vertex]), 4)
+                print(f"-> p({vertex}) = ({v1}^{alpha} * {v2}^{beta}) / {round(sum_values, 10)} = {round(value / sum_values, 4)}")
         probabilities = {
             vertex: (
                 pheromones[self._current_vertex][vertex] ** alpha
@@ -41,9 +47,8 @@ class Ant:
              ) / sum_values
             for vertex in possible_vertices
         }
-        if print_state:
-            print(self._path, probabilities)
-        next_vertex = choices(list(probabilities.keys()), k=1, weights=list(probabilities.values()))[0]
+        probabilities_items = sorted(list(probabilities.items()), key=lambda x: x[0])
+        next_vertex = random.choices([x[0] for x in probabilities_items], k=1, weights=[x[1] for x in probabilities_items])[0]
         self._visited_vertices.add(next_vertex)
         self._path.append(next_vertex)
         self._current_vertex = next_vertex
@@ -100,14 +105,13 @@ class AntOptimization:
     def step(self, n_ants: int, start_vertex: str, evaporation: float = 0.6, print_state: bool = False):
         for x in self._pheromones:
             for y in self._pheromones[x]:
-                # print((x, y), self._pheromones[x][y])
                 self._pheromones[x][y] *= (1 - evaporation)
                 self._pheromones[x][y] = max(self._pheromones[x][y], 0.001)
 
         ants = [Ant(start_vertex) for _ in range(n_ants)]
         for _ in range(len(self._distances) - 1):
             for i, ant in enumerate(ants):
-                ant.choice_new_vertex(self._distances, self._pheromones, False)
+                ant.choice_new_vertex(self._distances, self._pheromones, print_state)
 
         pathes = {}
         pathes_counter = {}
@@ -115,7 +119,7 @@ class AntOptimization:
             pathes[tuple(ant.path)] = ant.get_path_cost(self._distances)
             pathes_counter[tuple(ant.path)] = pathes_counter.get(tuple(ant.path), 0) + 1
         
-        shortest_path = max(pathes, key=pathes.get)
+        shortest_path = min(pathes, key=pathes.get)
         if print_state:
             for i, ant in enumerate(ants):
                 print(f"Ant {i}: {ant.path}", ant.get_path_cost(self._distances))
@@ -124,19 +128,20 @@ class AntOptimization:
             pheromones_increments = ant.get_pheromones_increments(distances=self._distances)
             for from_vertex, to_vertex in pheromones_increments:
                 self._pheromones[from_vertex][to_vertex] += pheromones_increments[(from_vertex, to_vertex)]
-        print("Самый короткий маршрут: ", shortest_path, pathes[shortest_path])
+        print("Самый короткий маршрут: ", " -> ".join(list(shortest_path) + [start_vertex]), pathes[shortest_path])
         print("Все расмотренные пути:")
         for path in pathes_counter:
-            print(path, "Муравьев:", pathes_counter[path])
+            print(" -> ".join(list(path) + [start_vertex]), "Муравьев:", pathes_counter[path], "Длина:", pathes[path])
         
 
 def traveling():
+    random.seed(100)
     with open("pr2/addresses_paths.json") as f:
         distances = json.loads(f.read())
     opt = AntOptimization(distances)
-    for i in range(250):
+    for i in range(100):
         print(f"=== Шаг {i} ===")
-        opt.step(15, "Дом", 0.6, False)
+        opt.step(25, "Дом", 0.6, False)
     
 
 traveling()
