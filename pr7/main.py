@@ -1,5 +1,4 @@
 import numpy as np
-import random
 from collections.abc import Callable
 from typing import TypeAlias
 from matplotlib import pyplot as plt
